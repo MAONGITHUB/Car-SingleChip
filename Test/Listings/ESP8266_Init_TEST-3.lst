@@ -1,0 +1,155 @@
+C51 COMPILER V9.00   ESP8266_INIT_TEST_3                                                   01/30/2017 22:43:36 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE ESP8266_INIT_TEST_3
+OBJECT MODULE PLACED IN .\Objects\ESP8266_Init_TEST-3.obj
+COMPILER INVOKED BY: E:\Keil5 C51\C51\BIN\C51.EXE ESP8266_Init_TEST-3.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRIN
+                    -T(.\Listings\ESP8266_Init_TEST-3.lst) OBJECT(.\Objects\ESP8266_Init_TEST-3.obj)
+
+line level    source
+
+   1          //#include <reg52.h>
+   2          #include <stdio.h>
+   3          #include <stc89c52.h>
+   4          #include <string.h>             //strcmp()比较字符串且严格大小写,stricmp()不区分大小写
+   5          
+   6          unsigned char respond_temp[10];
+   7          
+   8          //------------延时函数-----------------
+   9          void Delayms( unsigned int z )
+  10          {
+  11   1              unsigned int x;
+  12   1              unsigned int y;
+  13   1              for( x = z; x > 0; x-- )
+  14   1              {
+  15   2                      for( y = 125; y > 0; y-- );
+  16   2              }
+  17   1      }
+  18          
+  19          
+  20          
+  21          //------------Chip初始化-----------------
+  22          void Init()
+  23          {
+  24   1              //AUXR &= 0xFB;         //定时器2时钟为Fosc/12,即12T,T2在预分频禁止时默认为12分频
+  25   1              //AUXR |= 0x01;         //串口1选择定时器2为波特率发生器,已经在T2CON设置R/TCLK
+  26   1      
+  27   1              RCAP2H = 0xff;  //T2高8位重载值
+  28   1              RCAP2L = 0xdc;  //T2低8位重载值
+  29   1              TH2 = RCAP2H;   //T2初值
+  30   1              TL2 = RCAP2L;   //T2初值     
+  31   1                      
+  32   1              PCON = 0;       //波特率不加倍    
+  33   1              T2CON = 0x34;       //T2控制设置,在R/TCLK确定T2作为串口波特率产生器 TF2 EXF2 (RCLK) (TCLK)
+             - EXEN2 (TR2) C/T2 CP/RL2
+  34   1              T2MOD = 0x01;       //T2模式设置, D7 D6 D5 D4 D3 D2 T2OE(输出到P1.0) DCEN(向下计数允许)
+  35   1              SCON = 0x50;        //串口工作方式1,8位数据,可变波特率
+  36   1              REN = 1;        //启用串口接收
+  37   1      
+  38   1              /*--------------------Timer1--------------------------------*/
+  39   1              TMOD = 0x10;    //定时器1,工作模式1(16位)
+  40   1              TH1=(65536-46080)/256;          //所记次数应为46080,计时器每隔50000us即50ms发起一次中断
+  41   1              TL1=(65536-46080)%256;          //46080=50000*11.0592/12
+  42   1              TR1 = 1;        //打开定时器1
+  43   1      
+  44   1              /*-------------------interrupt_control----------------------*/
+  45   1              ES = 0;//先关闭串口中断,WIFI模块初始化后再打开
+  46   1              TI = 0;//串口输出中断需先置0避免引起冲突
+  47   1              EA = 1;//开启总中断
+  48   1      }
+  49          
+  50          void Respond_input()
+  51          {
+  52   1              unsigned int i=0,wait_time=0;
+  53   1              while(wait_time<100)            //20次为1s,即100次5s
+C51 COMPILER V9.00   ESP8266_INIT_TEST_3                                                   01/30/2017 22:43:36 PAGE 2   
+
+  54   1              {
+  55   2                      if(RI)
+  56   2                      {
+  57   3                              respond_temp[i%10]=SBUF;        //回显字符载入循环数组,只保留后10个字符
+  58   3                              i++;
+  59   3                              RI=0;
+  60   3                      }
+  61   2                      if(TF1 == 1)            //定时器1溢出标志位
+  62   2                      {
+  63   3                              wait_time++;
+  64   3                              TH1=(65536-46080)/256;
+  65   3                              TL1=(65536-46080)%256;  //定时器1重置
+  66   3                              TF1= 0;
+  67   3                      }
+  68   2              }       
+  69   1      }
+  70          
+  71          void Respond_check(unsigned char* symbol)       //标志字符串必须为两位
+  72          {
+  73   1              unsigned int w=1,i=0;
+  74   1              //unsigned int len=0;
+  75   1              //len=strlen(symbol);           //检测标志字符串长度
+  76   1              unsigned char symbol_temp[3];           //最后一位存/0
+  77   1              strcpy(symbol_temp,symbol);     //将字符串转为字符数组
+  78   1      
+  79   1              while(w)        //w为循环等待标志
+  80   1              {       
+  81   2                      for(i=0;i<10;i++)       //循环 转换后的回显缓存数组
+  82   2                      {
+  83   3                              if(respond_temp[i] == symbol_temp[0])   //第一个标志位检测
+  84   3                                      if(respond_temp[(i+1)%10] == symbol_temp[1])    //第二个标志位检测
+  85   3                                      {
+  86   4                                              i=10;
+  87   4                                              w=0;
+  88   4                                              printf("haole\n");
+  89   4                                              break;
+  90   4                                      }
+  91   3                      }
+  92   2              }
+  93   1      }
+  94          
+  95          void Init_ESP8266()
+  96          {
+  97   1              unsigned int wait=1;
+  98   1              unsigned int wait_count=0;
+  99   1              
+ 100   1              ES=0;           //关闭串口中断
+ 101   1              Delayms(10);            
+ 102   1              
+ 103   1              TI=1;           //打开串口输出,使printf起作用
+ 104   1              printf("AT+RST\n");
+ 105   1              TI=0;
+ 106   1              Respond_input();
+ 107   1              Respond_check("OK");
+ 108   1      
+ 109   1              Delayms(50);
+ 110   1              TI=1;
+ 111   1              printf("AT+CWMODE=1\n");
+ 112   1              TI=0;
+ 113   1              
+ 114   1              //ES=1;         //打开串口中断
+ 115   1      }
+C51 COMPILER V9.00   ESP8266_INIT_TEST_3                                                   01/30/2017 22:43:36 PAGE 3   
+
+ 116          
+ 117          
+ 118          
+ 119          void main()
+ 120          {
+ 121   1              //respond_temp=(char*) malloc (50);
+ 122   1              Init();
+ 123   1              Delayms(10);
+ 124   1              Init_ESP8266();
+ 125   1              while(1){}
+ 126   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    326    ----
+   CONSTANT SIZE    =     31    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     10      13
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

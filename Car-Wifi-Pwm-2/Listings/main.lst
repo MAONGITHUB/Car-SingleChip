@@ -1,0 +1,148 @@
+C51 COMPILER V9.00   MAIN                                                                  02/26/2017 17:11:30 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: E:\Keil5 C51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\ma
+                    -in.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <stc89c52.h>
+   2          #include <string.h>
+   3          
+   4          sbit key1=P3^4;
+   5          sbit key2=P3^5;
+   6          sbit key3=P3^6;
+   7          sbit key4=P3^7;
+   8          
+   9          unsigned int xdata num[7];
+  10          unsigned int display_ctr=0;             // 数码管显示循环控制
+  11          unsigned int sending=0,new_signal=0;    //sending用于缓解串口数据发送较慢的情况,new_signal用�
+             -��判断是否有新数据进入
+  12          unsigned int sign=0;
+  13          unsigned char Action_Buff='q';
+  14          
+  15          #include"digital_led.h"     //调用数码管部分
+  16          extern struct Queue RBuff;     //digital_led.h
+  17          extern void InitQueue(struct Queue *Q);     //循环队列初始化
+  18          extern unsigned char SerQueue(struct Queue *Q,int r);           // r为所要查找的当前位置
+  19          extern void char_to_int();              //字符转整型数字并输出
+  20          
+  21          #include"ESP8266.h"
+  22          extern void Init_ESP8266();
+  23          
+  24          #include"delay_uart.h"
+  25          extern void Delayms( unsigned int z );
+  26          
+  27          struct Queue RBuff;     //Rbuff是一个静态循环队列/字符数组
+  28          
+  29          //------------Chip初始化-----------------
+  30          void Init()
+  31          {
+  32   1              //AUXR &= 0xFB;         //定时器2时钟为Fosc/12,即12T,T2在预分频禁止时默认为12分频
+  33   1              //AUXR |= 0x01;         //串口1选择定时器2为波特率发生器,已经在T2CON设置R/TCLK
+  34   1      
+  35   1              RCAP2H = 0xff;  //T2高8位重载值
+  36   1              RCAP2L = 0xdc;  //T2低8位重载值
+  37   1              TH2 = RCAP2H;   //T2初值
+  38   1              TL2 = RCAP2L;   //T2初值     
+  39   1                      
+  40   1              PCON = 0;       //波特率不加倍    
+  41   1              T2CON = 0x34;   //T2控制设置,在R/TCLK确定T2作为串口波特率产生器 TF2 EXF2 (RCLK) (TCLK) EXE
+             -N2 (TR2) C/T2 CP/RL2
+  42   1              T2MOD = 0x01;   //T2模式设置, D7 D6 D5 D4 D3 D2 T2OE(输出到P1.0) DCEN(向下计数允许)
+  43   1              SCON = 0x50;        //串口工作方式1,8位数据,可变波特率
+  44   1              REN = 1;        //启用串口接收
+  45   1      
+  46   1              /*--------------------中断顺序----------------------------*/
+  47   1              //外部中断0 > 定时/计数器0 > 外部中断1 > 定时/计数器1 > 串行中断
+  48   1              //IP=0x00;
+  49   1              /*两级中断嵌套,必须有高低优先级,同级不发生嵌套*/
+  50   1              PT1=1;  //Timer1优先级
+  51   1              PT0=1;  //Timer0优先级
+  52   1      
+C51 COMPILER V9.00   MAIN                                                                  02/26/2017 17:11:30 PAGE 2   
+
+  53   1              /*----------------Timer0/1模式设置----------------------------*/
+  54   1              TMOD = 0x12;    //定时器1/0,工作模式1(16位手动)/工作模式2(8位自动)
+  55   1      
+  56   1              /*--------------------Timer1--------------------------------*/
+  57   1              TH1=(65536-46080)/256;          //所记次数应为46080,计时器每隔50000us即50ms发起一次中断
+  58   1              TL1=(65536-46080)%256;          //46080=50000*11.0592/12
+  59   1              ET1=0;          //定时器1中断允许
+  60   1              TR1=0;  //打开定时器1
+  61   1              TF1=0;  //中断标志位
+  62   1      
+  63   1              /*--------------------Timer0--------------------------------*/
+  64   1              TH0=0xa4;               //100us预重装
+  65   1              TL0=0x00;               //100us计时
+  66   1              ET0=0;          //定时器0中断允许
+  67   1              TR0=0;  //定时器0开关
+  68   1              TF0=0;  //中断标志位
+  69   1      
+  70   1              /*-------------------interrupt_control----------------------*/
+  71   1              ES = 0;//先关闭串口中断,WIFI模块初始化后再打开
+  72   1              TI = 0;//串口输出中断需先置0避免引起冲突
+  73   1              EA = 1;//开启总中断
+  74   1      }
+  75          
+  76          void main(void)
+  77          {
+  78   1              Init();
+  79   1              Delayms(2000);
+  80   1              //Init_ESP8266();
+  81   1              TI = 1;
+  82   1              ES=1;
+  83   1              P1=0x00;
+  84   1              InitQueue(&RBuff);
+  85   1              while(1)  //不让主函数循环执行并且循环检测（查询方式）
+  86   1              {
+  87   2                      if(SBUF== '@' && new_signal)    //if(SerQueue(&RBuff,RBuff.rear) == '@' && new_signal)
+  88   2                      {
+  89   3                              char_to_int();
+  90   3                      }
+  91   2                      if(key1 == 0)
+  92   2                      {
+  93   3                              P1=0x00;
+  94   3                              Init_ESP8266();
+  95   3                              //P1=0xff;
+  96   3                      }
+  97   2                      /*if(key3 == 0)
+  98   2                      {
+  99   2                              if(Lgear==(gear+1))
+ 100   2                                      Lgear=1;
+ 101   2                              else 
+ 102   2                              {
+ 103   2                                      Lgear++;
+ 104   2                                      Status_display(Lgear);
+ 105   2                              }
+ 106   2                      }
+ 107   2                      if(key4 == 0)
+ 108   2                      {
+ 109   2                              if(Rgear==(gear+1))
+ 110   2                                      Rgear=1;
+ 111   2                              else
+ 112   2                              {
+ 113   2                                      Rgear++;
+ 114   2                                      Status_display(Rgear);
+C51 COMPILER V9.00   MAIN                                                                  02/26/2017 17:11:30 PAGE 3   
+
+ 115   2                              }
+ 116   2                      }*/
+ 117   2              }
+ 118   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1680    ----
+   CONSTANT SIZE    =    102    ----
+   XDATA SIZE       =     56    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     47      45
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

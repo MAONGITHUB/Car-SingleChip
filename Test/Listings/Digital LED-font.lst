@@ -1,0 +1,55 @@
+C51 COMPILER V9.00   DIGITAL_LED_FONT                                                      02/26/2017 01:07:22 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE DIGITAL_LED_FONT
+OBJECT MODULE PLACED IN .\Objects\Digital LED-font.obj
+COMPILER INVOKED BY: E:\Keil5 C51\C51\BIN\C51.EXE Digital LED-font.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.
+                    -\Listings\Digital LED-font.lst) OBJECT(.\Objects\Digital LED-font.obj)
+
+line level    source
+
+   1          #include <reg51.h>
+   2          
+   3          sbit duanx=P2^6;    //段选信号的锁存器控制
+   4          sbit weix=P2^7;   //位选信号的锁存器控制
+   5          sbit led0=P0^0;sbit led1=P0^1;sbit led2=P0^2;sbit led3=P0^3;sbit led4=P0^4;sbit led5=P0^5;
+   6          unsigned char number[16]={0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F,0x77,0x7C,0x39,0x5E,0x79,0x71}
+             -; //数字0~F,小数点为P0.7(单独显示0x80)
+   7          
+   8          void ResetP0()
+   9          {
+  10   1        P0=0xff;
+  11   1      }
+  12          
+  13          void main()
+  14          {   //P0.0~0.7控制573锁存器
+  15   1        duanx=0;
+  16   1        weix=0;
+  17   1      
+  18   1        P0=number[7];     //选择显示数字,共阴
+  19   1        duanx=1;
+  20   1        duanx=0;
+  21   1      
+  22   1        ResetP0();
+  23   1        led0=0;
+  24   1        led5=0;    //数码管位置选择,P0.0~0.5，由左至右，操作共阳，实际共阴
+  25   1        weix=1;
+  26   1        weix=0;
+  27   1      
+  28   1        while(1);
+  29   1      }
+  30          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     28    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     16    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

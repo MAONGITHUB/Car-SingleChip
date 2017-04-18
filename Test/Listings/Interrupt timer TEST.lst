@@ -1,0 +1,81 @@
+C51 COMPILER V9.00   INTERRUPT_TIMER_TEST                                                  02/26/2017 01:11:15 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE INTERRUPT_TIMER_TEST
+OBJECT MODULE PLACED IN .\Objects\Interrupt timer TEST.obj
+COMPILER INVOKED BY: E:\Keil5 C51\C51\BIN\C51.EXE Interrupt timer TEST.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRI
+                    -NT(.\Listings\Interrupt timer TEST.lst) OBJECT(.\Objects\Interrupt timer TEST.obj)
+
+line level    source
+
+   1          #include <stc89c52.h>
+   2          #include <string.h>
+   3          
+   4          int timer_count=0;
+   5          unsigned char xdata number[16]={0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F,0x77,0x7C,0x39,0x5E,0x79
+             -,0x71}; //数字0~F;小数点为P0.7(单独显示0x80)
+   6          unsigned char wei[6]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf};       //数码管位置选择
+   7          
+   8          sbit duanx=P2^6;    //段选信号的锁存器控制
+   9          sbit weix=P2^7;   //位选信号的锁存器控制
+  10          
+  11          
+  12          void Init()
+  13          {
+  14   1              TMOD = 0x02;    //定时器1/0,工作模式1(16位手动)/工作模式2(8位自动
+  15   1              /*--------------------Timer0--------------------------------*/
+  16   1              TH0=0xa4;               //100us预重装
+  17   1              TL0=0x00;               //100us计时
+  18   1              ET0=0;;         //定时器0中断允许
+  19   1              TR0=0;  //定时器0开关
+  20   1              TF0=0;  //中断标志位
+  21   1      
+  22   1              /*-------------------interrupt_control----------------------*/
+  23   1              ES = 0;//先关闭串口中断,WIFI模块初始化后再打开
+  24   1              EA = 1;//开启总中断
+  25   1      }
+  26          
+  27          void pwm_interrupt(void) interrupt 1 using 0    //timer0中断
+  28          {
+  29   1              timer_count++;
+  30   1              TF0=0;
+  31   1      }
+  32          
+  33          void main(void)
+  34          {
+  35   1              Init();
+  36   1              ET0=1;
+  37   1              TR0=1;
+  38   1              while(1)
+  39   1              {
+  40   2                      if (timer_count==20000)
+  41   2                      {
+  42   3                              ET0=0;
+  43   3                              duanx=0;
+  44   3                              weix=0;
+  45   3                              P0=0x7D;        //选择显示数字,共阴
+  46   3                              duanx=1;
+  47   3                              duanx=0;
+  48   3                              P0=0xff;
+  49   3                              P0=0xfe;                //数码管位置0
+  50   3                              weix=1;
+  51   3                              weix=0;
+  52   3                      }
+  53   2              }
+C51 COMPILER V9.00   INTERRUPT_TIMER_TEST                                                  02/26/2017 01:11:15 PAGE 2   
+
+  54   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     77    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     16    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

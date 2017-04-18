@@ -1,0 +1,139 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Project:</h2>
+D:\Desktop\C-P\Car-Project-1\Car-Project-1.uvproj
+Project File Date:  01/01/2017
+
+<h2>Output:</h2>
+compiling C-P-1.c...
+C-P-1.c - 0 Error(s), 0 Warning(s).
+Build target '目标 1'
+compiling C-P-1.c...
+linking...
+Program Size: data=26.0 xdata=0 code=361
+creating hex file from "Car-Project-1"...
+"Car-Project-1" - 0 Error(s), 0 Warning(s).
+compiling C-P-1.c...
+C-P-1.c - 0 Error(s), 0 Warning(s).
+Build target '目标 1'
+linking...
+Program Size: data=26.0 xdata=0 code=361
+creating hex file from "Car-Project-1"...
+"Car-Project-1" - 0 Error(s), 0 Warning(s).
+compiling C-P-1.c...
+C-P-1.C(93): error C205: can't call an interrupt function
+C-P-1.c - 1 Error(s), 0 Warning(s).
+Build target '目标 1'
+compiling C-P-1.c...
+C-P-1.C(93): error C205: can't call an interrupt function
+目标未创建
+compiling C-P-1.c...
+C-P-1.C(93): error C205: can't call an interrupt function
+C-P-1.c - 1 Error(s), 0 Warning(s).
+compiling C-P-1.c...
+C-P-1.c - 0 Error(s), 0 Warning(s).
+compiling C-P-1.c...
+C-P-1.c - 0 Error(s), 0 Warning(s).
+Build target '目标 1'
+compiling C-P-1.c...
+linking...
+Program Size: data=22.0 xdata=0 code=359
+creating hex file from "Car-Project-1"...
+"Car-Project-1" - 0 Error(s), 0 Warning(s).
+compiling C-P-1.c...
+C-P-1.c - 0 Error(s), 0 Warning(s).
+Build target '目标 1'
+linking...
+Program Size: data=22.0 xdata=0 code=359
+creating hex file from "Car-Project-1"...
+"Car-Project-1" - 0 Error(s), 0 Warning(s).
+compiling C-P-1.c...
+C-P-1.c - 0 Error(s), 0 Warning(s).
+Build target '目标 1'
+linking...
+Program Size: data=22.0 xdata=0 code=359
+creating hex file from "Car-Project-1"...
+"Car-Project-1" - 0 Error(s), 0 Warning(s).
+Build target '目标 1'
+compiling C-P-1.c...
+linking...
+Program Size: data=22.0 xdata=0 code=359
+creating hex file from "Car-Project-1"...
+"Car-Project-1" - 0 Error(s), 0 Warning(s).
+compiling C-P-1.c...
+C-P-1.c - 0 Error(s), 0 Warning(s).
+Build target '目标 1'
+compiling C-P-1.c...
+linking...
+Program Size: data=26.0 xdata=0 code=371
+creating hex file from "Car-Project-1"...
+"Car-Project-1" - 0 Error(s), 0 Warning(s).
+compiling C-P-2.c...
+C-P-2.C(34): error C202: 'w': undefined identifier
+C-P-2.C(40): error C202: 's': undefined identifier
+C-P-2.C(46): error C202: 'a': undefined identifier
+C-P-2.C(52): error C202: 'd': undefined identifier
+C-P-2.C(63): error C202: 'w': undefined identifier
+C-P-2.C(63): error C172: 'case': missing enclosing switch
+C-P-2.C(64): error C202: 's': undefined identifier
+C-P-2.C(64): error C172: 'case': missing enclosing switch
+C-P-2.C(65): error C202: 'a': undefined identifier
+C-P-2.C(65): error C172: 'case': missing enclosing switch
+C-P-2.C(66): error C202: 'd': undefined identifier
+C-P-2.C(66): error C172: 'case': missing enclosing switch
+C-P-2.c - 12 Error(s), 0 Warning(s).
+compiling C-P-2.c...
+C-P-2.C(34): error C220: illegal constant expression
+C-P-2.C(40): error C220: illegal constant expression
+C-P-2.C(46): error C220: illegal constant expression
+C-P-2.C(52): error C220: illegal constant expression
+C-P-2.C(63): error C172: 'case': missing enclosing switch
+C-P-2.C(64): error C172: 'case': missing enclosing switch
+C-P-2.C(65): error C172: 'case': missing enclosing switch
+C-P-2.C(66): error C172: 'case': missing enclosing switch
+C-P-2.c - 8 Error(s), 0 Warning(s).
+compiling C-P-2.c...
+C-P-2.C(34): error C220: illegal constant expression
+C-P-2.C(40): error C220: illegal constant expression
+C-P-2.C(46): error C220: illegal constant expression
+C-P-2.C(52): error C220: illegal constant expression
+C-P-2.C(66): error C220: illegal constant expression
+C-P-2.C(67): error C220: illegal constant expression
+C-P-2.C(68): error C220: illegal constant expression
+C-P-2.C(69): error C220: illegal constant expression
+C-P-2.c - 8 Error(s), 0 Warning(s).
+compiling C-P-2.c...
+C-P-2.C(34): error C220: illegal constant expression
+C-P-2.C(40): error C220: illegal constant expression
+C-P-2.C(46): error C220: illegal constant expression
+C-P-2.C(52): error C220: illegal constant expression
+C-P-2.C(64): error C141: syntax error near 'char'
+C-P-2.C(66): error C220: illegal constant expression
+C-P-2.C(67): error C220: illegal constant expression
+C-P-2.C(68): error C220: illegal constant expression
+C-P-2.C(69): error C220: illegal constant expression
+C-P-2.c - 9 Error(s), 0 Warning(s).
+compiling C-P-2.c...
+C-P-2.C(34): error C220: illegal constant expression
+C-P-2.C(40): error C220: illegal constant expression
+C-P-2.C(46): error C220: illegal constant expression
+C-P-2.C(52): error C220: illegal constant expression
+C-P-2.C(66): error C220: illegal constant expression
+C-P-2.C(67): error C220: illegal constant expression
+C-P-2.C(68): error C220: illegal constant expression
+C-P-2.C(69): error C220: illegal constant expression
+C-P-2.c - 8 Error(s), 0 Warning(s).
+compiling C-P-2.c...
+C-P-2.C(81): warning C206: 'CurrentAction': missing function-prototype
+C-P-2.C(81): error C267: 'CurrentAction': requires ANSI-style prototype
+C-P-2.c - 1 Error(s), 1 Warning(s).
+compiling C-P-2.c...
+C-P-2.c - 0 Error(s), 0 Warning(s).
+Build target '目标 1'
+compiling C-P-2.c...
+linking...
+Program Size: data=23.0 xdata=0 code=434
+creating hex file from "Car-Project-1"...
+"Car-Project-1" - 0 Error(s), 0 Warning(s).

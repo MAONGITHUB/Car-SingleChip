@@ -1,0 +1,72 @@
+C51 COMPILER V9.01   MAIN                                                                  01/19/2017 00:26:03 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: E:\Keil4\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #include<string.h>
+   3          
+   4          unsigned int num[7];
+   5          unsigned int display_ctr=0;     // 数码管显示循环控制
+   6          unsigned int sending=0,new_signal=0;        //sending用于缓解串口数据发送较慢的情况,new_signal用于判断是否
+             -有新数据进入
+   7          unsigned int sign=0;
+   8          unsigned char Action_Buff='q';
+   9          
+  10          #include"digital_led.h"     //调用数码管部分
+  11          extern struct Queue RBuff;     //digital_led.h
+  12          extern void InitQueue(struct Queue *Q);     //循环队列初始化
+  13          extern unsigned char SerQueue(struct Queue *Q,int r);       // r为所要查找的当前位置
+  14          extern void char_to_int();     //字符转整型数字并输出
+  15          
+  16          
+  17          struct Queue RBuff;     //Rbuff是一个静态循环队列/字符数组
+  18          
+  19          //----------初始化-------------
+  20          void Init()
+  21          {
+  22   1              //串口设置
+  23   1              SCON = 0x50;    //工作方式1
+  24   1              PCON = 0;       //波特率不加倍
+  25   1              TMOD = 0x20;
+  26   1              TH1 = 0xfd;     //11.0592晶振，9600波特率
+  27   1              TL1 = TH1;
+  28   1              TR1 = 1;
+  29   1              REN = 1;        //REN地址的值为控制串口数据接收的允许或者禁止
+  30   1              ES = 1; //允许串口中断
+  31   1              TI = 0;     //这两条在多个中断中一定要写，不然不能进入串口中断
+  32   1              EA = 1;
+  33   1      }
+  34          
+  35          void main(void)
+  36          {
+  37   1              Init();
+  38   1              InitQueue(&RBuff);
+  39   1              while(1)  //不让主函数循环执行并且循环检测（查询方式）
+  40   1              {
+  41   2                      if(SBUF== '@' && new_signal)    //if(SerQueue(&RBuff,RBuff.rear) == '@' && new_signal)
+  42   2                      {
+  43   3                              char_to_int();
+  44   3                      }
+  45   2              }       
+  46   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    887    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     63      20
+C51 COMPILER V9.01   MAIN                                                                  01/19/2017 00:26:03 PAGE 2   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

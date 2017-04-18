@@ -1,0 +1,222 @@
+C51 COMPILER V9.01   TEST                                                                  01/05/2017 14:47:09 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE TEST
+OBJECT MODULE PLACED IN test.OBJ
+COMPILER INVOKED BY: E:\Keil4\C51\BIN\C51.EXE test.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include <string.h>             //strlen()要用到
+   3          #include <intrins.h>
+   4          #include <stdio.h>
+   5          //#include <math.h>             //几次方 pow(数值,几次方)
+   6          //#include <stdlib.h>           //atoi()要用到，
+   7          
+   8           /*
+   9           atof()     将字符串转换为双精度浮点型值
+  10           atoi()     将字符串转换为整型值
+  11           atol()     将字符串转换为长整型值
+  12           strtod()   将字符串转换为双精度浮点型值，并报告不能被转换的所有剩余数字
+  13           strtol()   将字符串转换为长整值，并报告不能被转换的所有剩余数字
+  14           strtoul()  将字符串转换为无符号长整型值，并报告不能被转换的所有剩余数字
+  15           */
+  16          
+  17          //sbit led0=P0^0;sbit led1=P0^1;sbit led2=P0^2;sbit led3=P0^3;sbit led4=P0^4;sbit led5=P0^5;
+  18          unsigned char number[16]={0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F,0x77,0x7C,0x39,0x5E,0x79,0x71}
+             -; //数字0~F,小数点为P0.7(单独显示0x80)
+  19          unsigned char wei[6]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf};           //数码管位置选择
+  20          
+  21          sbit duanx=P2^6;    //段选信号的锁存器控制
+  22          sbit weix=P2^7;   //位选信号的锁存器控制
+  23          //unsigned char RBuff[8];               //={'1','2','3','4','q','9','w','6','5'};     //串口缓存
+  24          char SBuff[4];
+  25          unsigned int num[6];
+  26          int display_ctr=0;
+  27          int sending=0;          //sending用于缓解串口数据发送较慢的情况
+  28          int p=0;
+  29          
+  30          //------------静态循环队列（数组）（无头指针）定义-----------------
+  31          int maxsize=8;
+  32          typedef struct Queue    //存储结构
+  33          {
+  34                  char elem[maxsize];
+*** ERROR C221 IN LINE 34 OF TEST.C: non-constant case/dim expression
+  35                  int rear=-1;
+*** ERROR C141 IN LINE 35 OF TEST.C: syntax error near '='
+  36          };
+  37          
+  38          void EnQueue(struct Queue *Q,char e)
+  39          {
+  40   1              Q.rear = (Q.rear+1) % maxsize;
+  41   1              Q.elem[Q.rear] = e;
+  42   1      }
+  43          
+  44          char SerQueue(struct Queue *Q,int r)            // r为所要查找的当前位置
+  45          {               //查看队列元素时若位置为负数，取余有编译器及语言差异，保守起见自个写
+  46   1              if (r<0)
+  47   1                      return Q[maxsize+1+r];
+  48   1              else
+  49   1                      return Q[r];
+  50   1      }
+  51          
+  52          struct Queue RBuff;
+C51 COMPILER V9.01   TEST                                                                  01/05/2017 14:47:09 PAGE 2   
+
+  53          
+  54          //------------延时函数-----------------
+  55          void Delayms( unsigned int z )
+  56          {
+  57   1              unsigned int x;
+  58   1              unsigned int y;
+  59   1              for( x = z; x > 0; x-- )
+  60   1              {
+  61   2                      for( y = 110; y > 0; y-- );
+  62   2              }
+  63   1      }
+  64          
+  65          //----------初始化-------------
+  66          void Init()
+  67          {
+  68   1                                              //串口设置
+  69   1              SCON = 0x50;             //工作方式1
+  70   1              PCON = 0;                //波特率不加倍
+  71   1              TMOD = 0x20;
+  72   1              TH1 = 0xfd;             //11.0592晶振，9600波特率
+  73   1              TL1 = TH1;
+  74   1              TR1 = 1;
+  75   1              REN = 1;
+  76   1              ES = 1;                 //允许串口中断
+  77   1              TI = 0;                 //这两条在多个中断中一定要写，不然不能进入串口中断
+  78   1              EA = 1;
+  79   1      }
+  80          
+  81          //------------P0口重置--------------------------------
+  82          void ResetP0()
+  83          {
+  84   1              P0=0xff;
+  85   1      }
+  86          
+  87          //------------数码管动态显示--------------------------------
+  88          void Display(int x )
+  89          {                                                               //P0.0~0.7控制573锁存器
+  90   1              int y,k;
+  91   1              while(display_ctr && !RI)
+  92   1              {
+  93   2                      for(k=0;k<x;k++)
+  94   2                      {
+  95   3                              duanx=0;
+  96   3                              weix=0;
+  97   3                              y=num[k];
+  98   3                              P0=number[y];            //选择显示数字,共阴
+  99   3                              duanx=1;
+ 100   3                              duanx=0;
+ 101   3      
+ 102   3                              ResetP0();              
+ 103   3                              P0=wei[k];                      //数码管位置选择,P0.0~0.5，由左至右，操作共阳，实际共阴
+ 104   3                              weix=1;
+ 105   3                              weix=0;
+ 106   3      
+ 107   3                              Delayms(2);
+ 108   3                      }               
+ 109   2              }
+ 110   1      }
+ 111          
+ 112          //------------字符转整型数字--------------------------------
+ 113          void char_to_int()
+ 114          {
+C51 COMPILER V9.01   TEST                                                                  01/05/2017 14:47:09 PAGE 3   
+
+ 115   1              int i=0,n=0,j=0;
+ 116   1              n=strlen(RBuff);                //Rbuff是一个字符数组
+*** ERROR C181 IN LINE 116 OF TEST.C: incompatible operand
+ 117   1              while(i<6 && j<n )              //取输入的前6而为数字的数输出
+ 118   1              {                                               //atoi是将字符【串】转换为数字啊
+ 119   2                      if (RBuff[j]>='0' && RBuff[j]<='9')
+*** ERROR C178 IN LINE 119 OF TEST.C: struct/union comparison illegal
+*** ERROR C178 IN LINE 119 OF TEST.C: struct/union comparison illegal
+ 120   2                      {
+ 121   3                              num[i]=RBuff[j]-'0';            //num[i]=atoi(c);       
+ 122   3                              i++;
+ 123   3                      }
+ 124   2                      j++;
+ 125   2              }
+ 126   1              memset(RBuff,0,12);
+*** ERROR C181 IN LINE 126 OF TEST.C: incompatible operand
+ 127   1              display_ctr=1;
+ 128   1              Delayms(1000);
+ 129   1              Display(i);             //strlen()不能计算满额数组的长度，必须小于
+ 130   1      }
+ 131          
+ 132          //------------串口发送--发送函数-----------------
+ 133          void Send(char type,char cmd)
+ 134          { 
+ 135   1              char SBuff[4];    //构建数据包，放前面去了
+ 136   1              char *p;
+ 137   1              int Send_Count=0;
+ 138   1              *p = SBuff;
+ 139   1              SBuff[0]=0XFF;          //前置校验码
+ 140   1              SBuff[1]=type;
+ 141   1              SBuff[2]=cmd;
+ 142   1              SBuff[3]=0XFF;          //后置校验码
+ 143   1               
+ 144   1              
+ 145   1                      SBUF = SBuff[1];  //发送
+ 146   1                      sending=1;      //设置正在发送标志
+ 147   1                      while(1)
+ 148   1                      {
+ 149   2                              if (sending==0) break;
+ 150   2                      }
+ 151   1                      //_nop_();       //微妙级延时函数(指令),12MHz延时1us
+ 152   1                      SBUF = SBuff[2];
+ 153   1                      sending=1;
+ 154   1                      while(1)
+ 155   1                      {
+ 156   2                              if (sending==0) break;
+ 157   2                      }
+ 158   1      }
+ 159          
+ 160          //------------串口接收--------------------------------
+ 161          void Receive() 
+ 162          {
+ 163   1              P1 = 0xff;
+ 164   1              display_ctr=0;
+ 165   1              EnQueue(RBuff,SBUF);            //SBUF串口寄存器,两个地址一样99H,但物理上相互独立不会覆盖
+*** ERROR C181 IN LINE 165 OF TEST.C: incompatible operand
+ 166   1      }
+ 167          
+ 168          //------------中断回置及缓和串口阻塞-----------
+ 169          void Send_interrupt(void) interrupt 4 using 1
+ 170          //中断0 外部中断0；中断1 定时器1中断；中断2 外部中断1；中断3 定时器2中断；中断4 串口中断
+ 171          //using 0 是第0组寄存器。using 1 是第1组寄存器。using 2 是第2组寄存器。using 3 是第3组寄存器。                   
+C51 COMPILER V9.01   TEST                                                                  01/05/2017 14:47:09 PAGE 4   
+
+ 172          {
+ 173   1              if(TI)      //TI在逻辑时序上先于RI触发
+ 174   1              {
+ 175   2                      sending=0;      //清除正在发送标志
+ 176   2                      TI=0;                   //发送中断回置
+ 177   2              }
+ 178   1              if(RI)    //收到数据
+ 179   1              {
+ 180   2                      ES=0;   //关闭串口中断
+ 181   2                      Receive();
+ 182   2                      RI=0;   //清中断请求
+ 183   2                      ES=1;   //打开串口中断
+ 184   2                      if(SerQueue(RBuff,RBuff.rear) == '@')
+*** ERROR C181 IN LINE 184 OF TEST.C: incompatible operand
+ 185   2                      {
+ 186   3                              Send(Serqueue(RBuff,(RBuff.rear-1)),Serqueue(RBuff,(RBuff.rear-2)));
+ 187   3                      }
+ 188   2              }
+ 189   1      }
+ 190                  
+ 191          
+ 192          void main(void)
+ 193          {
+ 194   1              Init();
+ 195   1              while(1){}              //不让主函数循环执行
+ 196   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  8 ERROR(S)
