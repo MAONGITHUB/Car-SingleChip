@@ -1,0 +1,87 @@
+
+AT
+OK
+-----------
+AT+GMR
+
+AT version:1.1.0.0(May 11 2016 18:09:56)
+SDK version:1.5.4(baaeaebb)
+Ai-Thinker Technology Co. Ltd.
+Jun 13 2016 11:29:20
+OK
+----------------------------------------
+AT+RST
+OK
+
+ ets Jan  8 2013,rst cause:2, boot mode:(3,4)
+
+load 0x40100000, len 1856, room 16 
+tail 0
+chksum 0x63
+load 0x3ffe8000, len 776, room 8 
+tail 0
+chksum 0x02
+load 0x3ffe8310, len 552, room 8 
+tail 0
+chksum 0x79
+csum 0x79
+
+2nd boot version : 1.5
+  SPI Speed      : 40MHz
+  SPI Mode       : DIO
+  SPI Flash Size & Map: 8Mbit(512KB+512KB)
+jump to run user1 @ 1000
+
+Œâr?lŒl?ìl`Œâr’lìl?l`Œâr’lŽžrlŽ‚rlŒžâŒblŒbr|Žbp?’bbbìònî€nn?llàâlìŽ?lŒŽllŒŒìŒlŽŽl€n?ŒžâŒblìŽpŒžâŒblŒbprlrl
+Ai-Thinker Technology Co. Ltd.
+
+ready
+-----------------------------------------
+AT+UART_DEF=9600,8,1,0,0
+OK  (P18)
+------------------------------------------
+AT+SLEEP=0
+OK  (½ûÓÃÐÝÃß)
+------------------------------------------
+AT+CWMODE=1
+OK£¨STA£©
+-----------------------------------------
+AT+CWJAP_DEF="HighWiFi_MC","88850391"
+WIFI DISCONNECT
+WIFI CONNECTED
+WIFI GOT IP
+
+OK
+------------------------------------------
+AT+CWAUTOCONN?
++CWAUTOCONN:1
+OK  (ÉÏµçÊÇ·ñ×Ô¶¯Á¬½ÓAP)
+-----------------------------------------
+AT+CIPSTA_DEF="192.168.199.130","192.168.199.1","255.255.255.0"
+OK   (ÉèÖÃIP£©
+------------------------------------------
+AT+CIFSR
++CIFSR:APIP,"192.168.4.1"
++CIFSR:APMAC,"a2:20:a6:12:c4:33"
++CIFSR:STAIP,"192.168.199.101"
++CIFSR:STAMAC,"a0:20:a6:12:c4:33"
+
+OK  £¨²éÑ¯µ±Ç°STA IP&AP DHCP·ÖÅäµ½IP£©
+----------------------------------------
+AT+STATUS
+   (²é¿´µ±Ç°·þÎñ¿ªÆô×´Ì¬£¬»¹Ã»¿ªÆôÏÔÊ¾error£©
+------------------------------------------
+AT+CIPMUX=0
+OK£¨¹Ø/¿ª¶àÁ¬½ÓÄ£Ê½£©
+---------------------------------------
+AT+CIPMODE=1
+OK  £¨Í¸´«£©
+---------------------------------------
+AT+CIPSTART="UDP","192.168.4.2",1001,2233,0
+CONNECT
+
+OK
+  //UDPÍ¸´«Ä£Ê½£¬ÓëPC£¨192.168.4.2£© UDPÎÕÊÖ£¬PC¶Ë¿Ú£¨1001£©£¬ESP8266¶Ë¿Ú£¨2233£©
+----------------------------------------
+AT+CIPSEND
+   £¨¿ªÆô·¢ËÍ£©

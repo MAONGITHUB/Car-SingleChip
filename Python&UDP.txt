@@ -1,0 +1,24 @@
+if __name__ == "__main__":
+
+有点类似于C的防止代码重构
+#ifndef _delay_uart_h_
+#define _delay_uart_h_
+	//内容
+#endif
+
+//----------初始化------------------------------------------------------------
+Python中的分号可以省略，主要通过换行来识别语句的结束。Python使用“\\”作为换行符。
+
+# 一条语句写在多行  
+print \\ 
+"hello world!"
+
+#----------Socket-UDP----------------------------------------------------------
+其实没客户端client端区别，只有receive和send
+
+s.recvfrom(bufsize[.flag])
+接受UDP套接字的数据。与recv()类似，但返回值是（data,address）。其中data是包含接收数据的字符串，address是发送数据的套接字地址。
+
+s.sendto(string[,flag],address)
+发送UDP数据。将数据发送到套接字，address是形式为（ipaddr，port）的元组，指定远程地址。返回值是发送的字节数。
+
